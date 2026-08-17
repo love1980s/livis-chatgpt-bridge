@@ -62,7 +62,7 @@
     "@types/bun": "^1.2.22",
     "@types/ws": "^8.18.1",
     "ajv": "^8.20.0",
-    "typescript": "^5.9.2",
+    "typescript": "^7.0.2",
     "yaml": "^2.9.0"
   },
   "engines": {
