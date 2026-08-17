@@ -6,16 +6,22 @@
   "description": "使用版本化协议配置与可插拔 Agent connector 的 LiViS 共享 Relay Daemon",
   "license": "MIT",
   "author": {
-    "name": "Jassy",
-    "url": "https://github.com/Jassy930"
+    "name": "love1980s",
+    "url": "https://github.com/love1980s"
   },
+  "contributors": [
+    {
+      "name": "Jassy",
+      "url": "https://github.com/Jassy930"
+    }
+  ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Jassy930/livis-relay-daemon.git"
+    "url": "git+https://github.com/love1980s/livis-chatgpt-bridge.git"
   },
-  "homepage": "https://github.com/Jassy930/livis-relay-daemon#readme",
+  "homepage": "https://github.com/love1980s/livis-chatgpt-bridge#readme",
   "bugs": {
-    "url": "https://github.com/Jassy930/livis-relay-daemon/issues"
+    "url": "https://github.com/love1980s/livis-chatgpt-bridge/issues"
   },
   "keywords": [
     "livis",

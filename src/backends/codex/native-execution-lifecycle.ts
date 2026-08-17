@@ -14,6 +14,11 @@ import type {
   ExecutionSubmission,
 } from "../execution-backend.ts";
 import type { StoredJob } from "../../types.ts";
+import {
+  formatCodexGlassesPrompt,
+  DISABLED_CODEX_GLASSES_MODE,
+  type CodexGlassesModeConfig,
+} from "./glasses-prompt.ts";
 
 /**
  * 只描述一个已经建立的 native app-server client；进程、版本、runtime 选择器和认证边界仍由
@@ -33,6 +38,7 @@ export interface CodexNativeExecutionLifecycleOptions {
   requestTimeoutMs: number;
   turnTimeoutMs: number;
   maxOutputChars: number;
+  glassesMode?: CodexGlassesModeConfig;
 }
 
 export interface CodexNativeExecutionLifecycleDependencies {
@@ -147,6 +153,7 @@ export class CodexNativeExecutionLifecycle {
   private readonly requestTimeoutMs: number;
   private readonly turnTimeoutMs: number;
   private readonly maxOutputChars: number;
+  private readonly glassesMode: CodexGlassesModeConfig;
   private state: LifecycleState = "running";
   private activeAttempt: NativeAttempt | null = null;
   private notificationTail: Promise<void> = Promise.resolve();
@@ -169,6 +176,7 @@ export class CodexNativeExecutionLifecycle {
     this.requestTimeoutMs = options.requestTimeoutMs;
     this.turnTimeoutMs = options.turnTimeoutMs;
     this.maxOutputChars = options.maxOutputChars;
+    this.glassesMode = options.glassesMode ?? DISABLED_CODEX_GLASSES_MODE;
     this.client = dependencies.client;
     this.handlers = dependencies.handlers;
     this.clientEpochFence = dependencies.clientEpochFence;
@@ -246,7 +254,11 @@ export class CodexNativeExecutionLifecycle {
     try {
       response = await this.client.request("turn/start", {
         threadId: this.threadId,
-        input: [{ type: "text", text: job.text, text_elements: [] }],
+        input: [{
+          type: "text",
+          text: formatCodexGlassesPrompt(job.text, this.glassesMode),
+          text_elements: [],
+        }],
         cwd: this.workspace,
         environments: codexLocalEnvironment(this.workspace),
       }, this.requestTimeoutMs);

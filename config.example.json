@@ -48,6 +48,11 @@
     "turnTimeoutMs": 900000,
     "interruptGraceMs": 5000,
     "shutdownTimeoutMs": 5000,
+    "glassesMode": {
+      "enabled": false,
+      "maxSpokenChars": 180,
+      "mobileHandoffText": "详细内容请在手机 ChatGPT 中继续查看。"
+    },
     "acknowledgeRemoteExecution": false
   },
   "claude": {

@@ -16,6 +16,7 @@ import type {
   ExecutionBackendKind,
   LegacyV4JobBackendKind,
 } from "./types.ts";
+import type { CodexGlassesModeConfig } from "./backends/codex/glasses-prompt.ts";
 
 export interface RelayConfig {
   schemaVersion: 1;
@@ -78,6 +79,7 @@ export interface RelayConfig {
     interruptGraceMs: number;
     shutdownTimeoutMs: number;
     acknowledgeRemoteExecution: boolean;
+    glassesMode: CodexGlassesModeConfig;
   };
   claude: {
     /** 只调用 Claude Code 当前本地状态，不读取或管理其账号状态。 */
@@ -106,6 +108,9 @@ export const DEFAULT_CODEX_REQUEST_TIMEOUT_MS = 30_000;
 export const DEFAULT_CODEX_TURN_TIMEOUT_MS = 15 * 60 * 1_000;
 export const DEFAULT_CODEX_INTERRUPT_GRACE_MS = 5_000;
 export const DEFAULT_CODEX_SHUTDOWN_TIMEOUT_MS = 5_000;
+export const DEFAULT_CODEX_GLASSES_MAX_SPOKEN_CHARS = 180;
+export const MAX_CODEX_GLASSES_MAX_SPOKEN_CHARS = 1_000;
+export const DEFAULT_CODEX_MOBILE_HANDOFF_TEXT = "详细内容请在手机 ChatGPT 中继续查看。";
 export const DEFAULT_CLAUDE_REQUEST_TIMEOUT_MS = 30_000;
 export const DEFAULT_CLAUDE_TURN_TIMEOUT_MS = 15 * 60 * 1_000;
 export const DEFAULT_CLAUDE_SHUTDOWN_TIMEOUT_MS = 5_000;
@@ -265,6 +270,49 @@ function parseCodexProvider(codex: Record<string, unknown> | undefined): CodexPr
   };
 }
 
+function parseCodexGlassesMode(
+  value: unknown,
+): CodexGlassesModeConfig {
+  if (value === undefined || value === null) {
+    return {
+      enabled: false,
+      maxSpokenChars: DEFAULT_CODEX_GLASSES_MAX_SPOKEN_CHARS,
+      mobileHandoffText: DEFAULT_CODEX_MOBILE_HANDOFF_TEXT,
+    };
+  }
+  if (typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("config.codex.glassesMode 必须是对象");
+  }
+  const glasses = value as Record<string, unknown>;
+  const unexpected = Object.keys(glasses).filter((key) =>
+    !["enabled", "maxSpokenChars", "mobileHandoffText"].includes(key)
+  );
+  if (unexpected.length > 0) {
+    throw new Error(`config.codex.glassesMode 包含未审核字段：${unexpected.sort().join(",")}`);
+  }
+  if (typeof glasses.enabled !== "boolean") {
+    throw new Error("config.codex.glassesMode.enabled 必须是布尔值");
+  }
+  const maxSpokenChars = glasses.maxSpokenChars === undefined
+    ? DEFAULT_CODEX_GLASSES_MAX_SPOKEN_CHARS
+    : asPositiveInteger(glasses.maxSpokenChars, "config.codex.glassesMode.maxSpokenChars");
+  if (maxSpokenChars > MAX_CODEX_GLASSES_MAX_SPOKEN_CHARS) {
+    throw new Error(
+      `config.codex.glassesMode.maxSpokenChars 不能超过 ${MAX_CODEX_GLASSES_MAX_SPOKEN_CHARS}`,
+    );
+  }
+  const mobileHandoffText = glasses.mobileHandoffText === undefined
+    ? DEFAULT_CODEX_MOBILE_HANDOFF_TEXT
+    : asNonEmptyString(
+        glasses.mobileHandoffText,
+        "config.codex.glassesMode.mobileHandoffText",
+      );
+  if (mobileHandoffText.length > 200) {
+    throw new Error("config.codex.glassesMode.mobileHandoffText 不能超过 200 个字符");
+  }
+  return { enabled: glasses.enabled, maxSpokenChars, mobileHandoffText };
+}
+
 export function parseRelayConfig(text: string, configPath: string): RelayConfig {
   const root = parseJsonObject(text, configPath);
   if (root.schemaVersion !== 1) {
@@ -318,6 +366,7 @@ export function parseRelayConfig(text: string, configPath: string): RelayConfig 
   const codexToolchainReadRoots = codexToolchainReadRootsRaw.map((path) => expandHome(path));
   const codexModel = optionalNonEmptyString(codex?.model, "config.codex.model");
   const codexProvider = parseCodexProvider(codex);
+  const codexGlassesMode = parseCodexGlassesMode(codex?.glassesMode);
   const codexMode = codex?.mode === undefined || codex.mode === null
     ? null
     : asNonEmptyString(codex.mode, "config.codex.mode");
@@ -325,6 +374,9 @@ export function parseRelayConfig(text: string, configPath: string): RelayConfig 
     codexMode !== null && codexMode !== "native-current" && codexMode !== "private-api-key"
   ) {
     throw new Error("config.codex.mode 只支持 native-current 或 private-api-key");
+  }
+  if (codexGlassesMode.enabled && codexMode !== "native-current") {
+    throw new Error("config.codex.glassesMode 目前只支持 codex.mode=native-current");
   }
   const claudeCommand = claude?.command === undefined
     ? "claude"
@@ -491,6 +543,7 @@ export function parseRelayConfig(text: string, configPath: string): RelayConfig 
         ? DEFAULT_CODEX_SHUTDOWN_TIMEOUT_MS
         : asPositiveInteger(codex.shutdownTimeoutMs, "config.codex.shutdownTimeoutMs"),
       acknowledgeRemoteExecution: codex?.acknowledgeRemoteExecution === true,
+      glassesMode: codexGlassesMode,
     },
     claude: {
       mode: claudeMode,
@@ -595,6 +648,11 @@ export async function initializeConfig(options: {
       interruptGraceMs: DEFAULT_CODEX_INTERRUPT_GRACE_MS,
       shutdownTimeoutMs: DEFAULT_CODEX_SHUTDOWN_TIMEOUT_MS,
       acknowledgeRemoteExecution: false,
+      glassesMode: {
+        enabled: false,
+        maxSpokenChars: DEFAULT_CODEX_GLASSES_MAX_SPOKEN_CHARS,
+        mobileHandoffText: DEFAULT_CODEX_MOBILE_HANDOFF_TEXT,
+      },
     },
     claude: {
       mode: null,

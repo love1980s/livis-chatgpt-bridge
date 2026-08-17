@@ -198,6 +198,11 @@ describe("配置与协议 profile", () => {
       interruptGraceMs: 3_000,
       shutdownTimeoutMs: 4_000,
       acknowledgeRemoteExecution: true,
+      glassesMode: {
+        enabled: false,
+        maxSpokenChars: 180,
+        mobileHandoffText: "详细内容请在手机 ChatGPT 中继续查看。",
+      },
     });
 
     const native = parseRelayConfig(JSON.stringify({

@@ -195,6 +195,7 @@ export class RelayDaemon {
             shutdownTimeoutMs: dependencies.config.codex.shutdownTimeoutMs,
             clientVersion: DAEMON_VERSION,
             assistantContext: dependencies.config.assistantContext,
+            glassesMode: dependencies.config.codex.glassesMode,
           }, {
             store,
             handlers: executionHandlers,

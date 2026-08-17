@@ -2,6 +2,10 @@ import { realpath } from "node:fs/promises";
 import { join } from "node:path";
 import type { AssistantContextConfig } from "../../config.ts";
 import {
+  DISABLED_CODEX_GLASSES_MODE,
+  type CodexGlassesModeConfig,
+} from "./glasses-prompt.ts";
+import {
   assistantContextFailureStatus,
   loadAssistantContextSnapshot,
   materializeAssistantContextSnapshot,
@@ -38,6 +42,7 @@ export interface CodexNativeExecutionBackendOptions {
   maxOutputChars: number;
   clientVersion: string;
   assistantContext?: AssistantContextConfig | null;
+  glassesMode?: CodexGlassesModeConfig;
 }
 
 interface NativeHarness {
@@ -140,6 +145,7 @@ export class CodexNativeExecutionBackend implements ExecutionBackend {
       await this.syncAssistantContext(layout.workspace);
     }
     const command = await pinCodexCommandForStateDir(layout.stateDir, this.options.command);
+    const glassesMode = this.options.glassesMode ?? DISABLED_CODEX_GLASSES_MODE;
     const harnessOptions: CodexNativeSessionHarnessOptions = {
       transport: {
         command,
@@ -161,6 +167,7 @@ export class CodexNativeExecutionBackend implements ExecutionBackend {
         requestTimeoutMs: this.options.requestTimeoutMs,
         turnTimeoutMs: this.options.turnTimeoutMs,
         maxOutputChars: this.options.maxOutputChars,
+        glassesMode,
       },
     };
     const start = this.dependencies.harnessStart ?? ((options, dependencies) =>
@@ -267,6 +274,7 @@ export class CodexNativeExecutionBackend implements ExecutionBackend {
   }
 
   status(): Record<string, unknown> {
+    const glassesMode = this.options.glassesMode ?? DISABLED_CODEX_GLASSES_MODE;
     return {
       kind: this.kind,
       mode: "native-current",
@@ -276,6 +284,13 @@ export class CodexNativeExecutionBackend implements ExecutionBackend {
       stateOwnership: "local-state-opaque",
       touchedDesktopDaemon: false,
       credentialStateInspected: false,
+      sessionContinuity: "single-persistent-thread",
+      chatgptMobileVisibility: "unverified",
+      glassesMode: {
+        enabled: glassesMode.enabled,
+        maxSpokenChars: glassesMode.maxSpokenChars,
+        mobileHandoffText: glassesMode.mobileHandoffText,
+      },
       assistantContext: {
         enabled: (this.options.assistantContext ?? null) !== null,
         mode: this.options.assistantContext?.mode ?? null,

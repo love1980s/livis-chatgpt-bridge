@@ -1,9 +1,12 @@
-# LiViS Relay Daemon
+# LiViS ChatGPT Bridge
 
-[![CI](https://github.com/Jassy930/livis-relay-daemon/actions/workflows/ci.yml/badge.svg)](https://github.com/Jassy930/livis-relay-daemon/actions/workflows/ci.yml)
+[![CI](https://github.com/love1980s/livis-chatgpt-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/love1980s/livis-chatgpt-bridge/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-在本地把 LiViS 消息连接到 Hermes、Codex 或 Claude Code。
+在 Mac mini 上把理想 LiViS 眼镜的官方远程入口连接到一个长期 Codex/ChatGPT 会话。
+
+本项目基于 [Jassy930/livis-relay-daemon](https://github.com/Jassy930/livis-relay-daemon)
+继续开发，保留其 Git 历史、MIT License、非官方协议边界和安全门禁。
 
 `livis-relay-daemon` 接收 LiViS 文本任务，调用选定的本地 AI 后端，并通过 SQLite 保存任务与回复
 投递状态。一套 daemon 同时只使用一个后端，不会自动切换或静默 fallback。
@@ -50,8 +53,8 @@ daemon 只管理 LiViS OAuth。本地后端的账号和认证仍由各自客户�
 ### 安装依赖
 
 ```bash
-git clone https://github.com/Jassy930/livis-relay-daemon.git
-cd livis-relay-daemon
+git clone https://github.com/love1980s/livis-chatgpt-bridge.git
+cd livis-chatgpt-bridge
 bun install --frozen-lockfile
 (cd hermes-plugin && uv sync --frozen)
 bun run check
@@ -168,6 +171,9 @@ bun run check
 参与开发前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 文档
+
+- [项目背景、官方插件审计与方案比较](docs/RESEARCH-BACKGROUND.md)
+- [LiViS 眼镜连接 ChatGPT：首期体验与验收](docs/LIVIS-CHATGPT-BRIDGE.md)
 
 - [运行手册](docs/OPERATIONS.md)
 - [架构说明](docs/ARCHITECTURE.md)

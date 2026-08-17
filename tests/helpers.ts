@@ -72,6 +72,11 @@ export function testConfig(stateDir: string): RelayConfig {
       interruptGraceMs: 5_000,
       shutdownTimeoutMs: 5_000,
       acknowledgeRemoteExecution: false,
+      glassesMode: {
+        enabled: false,
+        maxSpokenChars: 180,
+        mobileHandoffText: "详细内容请在手机 ChatGPT 中继续查看。",
+      },
     },
     claude: {
       mode: null,

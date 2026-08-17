@@ -25,6 +25,7 @@ import type {
 } from "../execution-backend.ts";
 import type { JobStore } from "../../state/store.ts";
 import type { StoredBackendSession, StoredJob } from "../../types.ts";
+import type { CodexGlassesModeConfig } from "./glasses-prompt.ts";
 
 export interface CodexNativeSessionCoordinatorOptions {
   sessionKey: string;
@@ -37,6 +38,7 @@ export interface CodexNativeSessionCoordinatorOptions {
   requestTimeoutMs: number;
   turnTimeoutMs: number;
   maxOutputChars: number;
+  glassesMode?: CodexGlassesModeConfig;
 }
 
 export interface CodexNativeSessionCoordinatorDependencies {
@@ -270,6 +272,7 @@ export class CodexNativeSessionCoordinator {
       requestTimeoutMs: options.requestTimeoutMs,
       turnTimeoutMs: options.turnTimeoutMs,
       maxOutputChars: options.maxOutputChars,
+      glassesMode: options.glassesMode,
     }, {
       client: dependencies.client,
       clientEpochFence: dependencies.clientEpochFence,
