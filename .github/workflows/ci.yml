@@ -52,7 +52,7 @@ jobs:
           fi
       - name: 安装 Python
         # actions/setup-python v5
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
           python-version: "3.11"
       - name: 安装 uv
@@ -83,7 +83,7 @@ jobs:
           persist-credentials: false
       - name: 安装 Python
         # actions/setup-python v5
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
           python-version: ${{ matrix.python-version }}
       - name: 安装 uv
